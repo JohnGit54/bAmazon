@@ -4,43 +4,54 @@ const cTable = require('console.table');
 var oConnection = require('./oConnection');
 
 
-var conn = new oConnection();
+
 var resultset;
 
+var conn = new oConnection();
+conn.setSQL("select * from products");
 
 
-function startCustomer() {
 
-    conn.setSQL("select * from products");  //asnc issue
-    //conn.setSQL( "UPDATE products set stock_quantity = 42 where item_id = 1 ");
+console.log(conn.mySQL, "  ", conn.resultSet);
 
-    //var resultset = conn.executeSQL(resultset);
-    var result = conn.executeSQL(function (data) {
-        console.log(" This is th dataset", data);
+function executeSQL() {
+
+    conn.connection.connect(function (err) {
+        if (err) {
+            console.log("Connect Error: ", err);
+            conn.connection.end();
+            throw err;
+        } else {
+            console.log("Connected!");
+        }
+
+        conn.connection.query(conn.mySQL, function (err, result) {
+            if (err) {
+                console.log("sql Create Error: ", err);
+                throw err;
+            }
+            //console.log("Result set num of rec", result.length);
+
+            conn.connection.end();
+            console.log("Result set num of rec", result.length);
+            displayResult(result);
+
+            return result;
+        });
     });
 
-    console.log(" is result set back yet", result);
-   
+
 }
 
-function performSQL(callback) {
-    console.log(" start of performSQL");
-    var result = conn.executeSQL();
-    console.log(" after performed callbacg of performSQL")
-    callback(result);
-}
-
-function foo(result) {
-    console.log("foo - Result :", result);
+function displayResult(result) {
+    console.table(result);
 }
 
 
-//startCustomer();
-conn.setSQL("select * from products");
-//performSQL(foo);
+
+executeSQL();
 
 
-var x = conn.qry;
-x();
-
+conn.setSQL("select * from departments");
+executeSQL();
 //conn.connection.end();
