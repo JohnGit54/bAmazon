@@ -21,10 +21,7 @@ function oConnection() {
     this.setSQL = function (sql) {
         this.mySQL = sql;
     }
-
-    this.resultSet = " dummy text in resultSEt";
-
-
+    
 }
 
 
