@@ -1,9 +1,15 @@
+//this is the connection javascript.
+//I spent many hours trying to return the result set to calling .js - no luck
+//that is going to change the encapsulation I was planning.
 
 
 
 var mysql = require("mysql");
+const cTable = require('console.table');
 
-//var oConnection = function () {
+var dataset = "this is the original value of dataset";
+
+// constructor oConnection
 function oConnection() {
 
     this.connection = mysql.createConnection({
@@ -21,112 +27,57 @@ function oConnection() {
     this.setSQL = function (sql) {
         this.mySQL = sql;
     }
-    
+
+    this.resultSet;
+
+    this.executeSQL = function (aConn) {
+        // console.log(conn.connection._connectCalled) ; <== perfect true false
+        prepareConnection(aConn, performSQL);
+    }
+}
+
+
+
+// this is outside of oConnection
+function prepareConnection(conn, callback) {
+    //console.log("connected: ", conn.connection._connectCalled, ', sql:', conn.mySQL);
+    if (!conn.connection._connectCalled) {
+        conn.connection.connect(function (err) {
+            if (err) {
+                console.log("Connect Error: ", err);
+                conn.connection.end();
+                throw err;
+            } else {
+                console.log("Connected!");
+                callback(conn);
+            }
+        })
+    }
+}
+
+function performSQL(conn) {
+    conn.connection.query(conn.mySQL, function (err, result) {
+        if (err) {
+            console.log("sql Create Error: ", err);
+            conn.connection.end();
+            throw err;
+        }
+
+        conn.connection.end();
+        console.log("Result set num of rec", result.length);
+        dataset = result;
+        //this.resultSet = result;
+        displayResult(result);
+        //return dataset;
+    });
+}
+
+//this uses the npm console table package
+function displayResult(resultSet) {
+    console.table(resultSet);
 }
 
 
 
 
-
-
-
-
-
-
-
-
-// this.executeSQL = function () {
-//     var self = this;
-
-
-//     if (this.mySQL == "") {
-//         console.log("The SQL is empty, set SQL");
-//         return;
-//     }
-//     console.log("in execute, this.mySQL:", this.mySQL);
-
-
-//     self.connection.connect(function (err) {
-//         if (err) {
-//             console.log("Connect Error: ", err);
-//             throw err;
-//         } else {
-//             console.log("Connected!");
-//         }
-
-//         self.connection.query(self.mySQL, function (err, result) {
-//             if (err) {
-//                 console.log("sql Create Error: ", err);
-//                 throw err;
-//             }
-//             console.log("Result set num of rec", result.length);
-
-//             self.connection.end();
-//             console.log("Result set num of rec", result.length);
-
-//             return result;
-//         });
-//     });
-
-// }
-
-
-
-
-
-// this.myCallBack = function (result) {
-//     console.log(" in myCallBack ", result[3].product_name);
-//     return result;
-// }
-
-
-
-
-
-
-// //function doSomething(callback) {
-// this.doSomething = function (callback) {
-//     // ...
-//     var self = this;
-//     self.connection.connect(function (err) {
-//         if (err) {
-//             console.log("Connect Error: ", err);
-//             throw err;
-//         }
-//         console.log("Connected!");
-
-//         self.connection.query(self.mySQL, function (err, result) {
-//             if (err) {
-//                 console.log("sql Create Error: ", err);
-//                 throw err;
-//             }
-//             self.connection.end();
-//             console.log("Result set num of rec", result.length);
-//             // Call the callback
-//             callback(result);
-//             return result;
-//         });
-//     });
-
-// }
-
-// function foo(result) {
-//     // I'm the callback
-//     console.log(" connecyion.foo ", result);
-// }
-
-// this.qry = this.doSomething(foo);
-
-
-
-
-
-
-
-
-// x = new oConnection();
-// x.setSQL(" Select * from products");
-// console.log(" mySQL:", x.mySQL);
-// console.log(" This is console.executeSQL", x.executeSQL());
-//x.connection.end();
 module.exports = oConnection;
