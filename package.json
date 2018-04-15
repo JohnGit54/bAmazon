@@ -1,0 +1,25 @@
+{
+  "name": "bAmazon",
+  "version": "1.0.0",
+  "description": "Create storefront with customer, manager and supervisor roles",
+  "main": "oConnection.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JohnGit54/bAmazon.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JohnGit54/bAmazon/issues"
+  },
+  "homepage": "https://github.com/JohnGit54/bAmazon#readme",
+  "dependencies": {
+    "console.table": "^0.10.0",
+    "inquirer": "^5.2.0",
+    "mysql": "^2.15.0"
+  }
+}
