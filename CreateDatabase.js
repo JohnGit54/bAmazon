@@ -60,6 +60,10 @@ VALUES('Blue-ray Player' , 2,  47.99 , 5000  ) ,  ('HD LED TV 30inch' , 2,  140.
 ('Shirt -calvin klein XL' , 6,  30.00 , 400  ) , ('Shirt -calvin klein XS' , 6,  30.00 , 3  ) , ('Mens Pants- skinny jeans',6 ,84.99, 20 )" ;
  
 
+var insertProducts2 = " INSERT INTO products ( product_name , department_id , price , stock_quantity )  \
+VALUES('Barbie Dream House' ,3 ,  120.99 , 5  ) ,  ('Nerf gun' , 3,  7.49 , 10  ) ,\
+('ScrewDriver - Phillips' , 4,  1.99 , 14  ) , ('ScrewDriver' , 4 ,  1.99 , 12  ) , ('SledgeHammer' , 4, 16.99 , 7  ) ,\
+('Shirt - Ladies xs' , 5,  31.00 , 4  ) , ('Shirt - Ladies med' , 5,  31.80 , 4  ) , ('Scarf ', 5 , 14.99, 6 )" ;
 
 
     //console.log(sqlCreateDepartments);
@@ -70,7 +74,7 @@ VALUES('Blue-ray Player' , 2,  47.99 , 5000  ) ,  ('HD LED TV 30inch' , 2,  140.
             throw err;
         }
         console.log("Connected!");
-        connection.query( insertProducts , function (err, result) {
+        connection.query( insertProducts2 , function (err, result) {
             if (err) {
                 console.log("sql Create Error: ", err);
                 throw err;

@@ -11,7 +11,6 @@ var dataset = "this is the original value of dataset";
 
 // constructor oConnection
 function oConnection() {
-
     this.connection = mysql.createConnection({
         host: "localhost",
         port: 3306,
@@ -65,17 +64,15 @@ function performSQL(conn) {
 
         conn.connection.end();
         console.log("Result set num of rec", result.length);
-        dataset = result;
-        //this.resultSet = result;
-        displayResult(result);
-        //return dataset;
+        //displayResult(result);
+        console.table(result);
     });
 }
 
 //this uses the npm console table package
-function displayResult(resultSet) {
-    console.table(resultSet);
-}
+// function displayResult(resultSet) {
+//     console.table(resultSet);
+// }
 
 
 
