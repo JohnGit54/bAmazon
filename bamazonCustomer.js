@@ -1,6 +1,7 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 const cTable = require('console.table');
+var currencyFormatter = require('currency-formatter');
 
 var oConnection = require('./oConnection');
 var conn = new oConnection();
@@ -68,7 +69,7 @@ function promptID() {
       startPrompt();
       return;
     } else {
-      var sql = "Select item_id, stock_quantity from products where item_id = ? ";
+      var sql = "Select item_id, stock_quantity , price from products where item_id = ? ";
       connection.query(sql, answers.prod_id, function (err, result) {
         if (err) throw err;
         if (result.length == 0) {
@@ -95,13 +96,13 @@ var promptQuantity = function (result) {
     ])
     .then(answers => {
       console.log(" in pQ ,", result[0], answers);
-      if (isNaN(answers.quant)){
+      if (isNaN(answers.quant)) {
         console.log("Please enter numeric quantity value");
         promptQuantity(result);
         return;
       }
       if (result[0].stock_quantity >= answers.quant) {
-        update_products(result[0].item_id, answers.quant);
+        update_products(result, answers.quant);
         showList(startPrompt);
         return;
       } else {
@@ -113,15 +114,17 @@ var promptQuantity = function (result) {
 // promptQuantity();
 
 
-function update_products(aID, aQnt) {
+function update_products( result, aQnt) {
   var x = " Update products set stock_quantity = stock_quantity - ? where item_id = ?";
-  connection.query(x, [aQnt, aID], function (err, result) {
+  var price = result[0].price;
+  connection.query(x, [aQnt, result[0].item_id ], function (err, result) {
     if (err) {
       console.log("sql Create Error: ", err);
       connection.end();
       throw err;
     }
-    console.log(" Updated table");
+    var cost =  currencyFormatter.format( price * aQnt, { code: 'USD' }); 
+    console.log(`  \n\n\n Updated table , your bill : ${cost} `);
 
   });
 
