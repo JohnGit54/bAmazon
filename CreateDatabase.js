@@ -65,6 +65,10 @@ VALUES('Barbie Dream House' ,3 ,  120.99 , 5  ) ,  ('Nerf gun' , 3,  7.49 , 10  
 ('ScrewDriver - Phillips' , 4,  1.99 , 14  ) , ('ScrewDriver' , 4 ,  1.99 , 12  ) , ('SledgeHammer' , 4, 16.99 , 7  ) ,\
 ('Shirt - Ladies xs' , 5,  31.00 , 4  ) , ('Shirt - Ladies med' , 5,  31.80 , 4  ) , ('Scarf ', 5 , 14.99, 6 )" ;
 
+var insertProducts3 = " INSERT INTO products ( product_name , department_id , price , stock_quantity )  \
+VALUES('Towels' , 1 ,  7.59 , 50  ) ,  ('Blender' , 1 ,  57.59 , 8  ) ,  ('Bath Mat' , 1,  21.49 , 10  ) ,\
+('Curtains' , 1,  25.47 , 14  ) , ('Salt and Pepper Shakers' , 1 ,  1.99 , 212  )" ; 
+
 
     //console.log(sqlCreateDepartments);
 
@@ -74,7 +78,7 @@ VALUES('Barbie Dream House' ,3 ,  120.99 , 5  ) ,  ('Nerf gun' , 3,  7.49 , 10  
             throw err;
         }
         console.log("Connected!");
-        connection.query( insertProducts2 , function (err, result) {
+        connection.query( insertProducts3 , function (err, result) {
             if (err) {
                 console.log("sql Create Error: ", err);
                 throw err;

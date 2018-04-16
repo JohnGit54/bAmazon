@@ -55,7 +55,7 @@ function managerMenu() {
 }
 
 function viewProds() {
-    var sql = "select p.item_id , p.product_name , d.department_name, p.price , p.stock_quantity\
+    var sql = "select d.department_name,  d.department_id , p.item_id , p.product_name ,  p.price , p.stock_quantity\
     from products p , departments d where p.department_id  = d.department_id \
     order by p.department_id ,p.price , p.product_name " ;
 
