@@ -17,7 +17,7 @@ var connection = mysql.createConnection({
   database: "bamazon"
 });
 
-//if (!connection._connectCalled) {
+
 connection.connect(function (err) {
   if (err) {
     console.log("Connect Error: ", err);
@@ -27,34 +27,14 @@ connection.connect(function (err) {
     console.log("Connected! as id ", connection.threadId);
   }
 })
-//}
-
-
-
-var custSQL = [];
-
-var x = "select p.item_id , p.product_name , d.department_name, \
- p.price , p.stock_quantity  from products p , departments d \
-  where p.department_id  = d.department_id \
-   order by p.department_id ,p.price , p.product_name " ;
-
-custSQL.push(x);
-
-x = " Select item_id, stock_quantity from products where item_id = ? "
-custSQL.push(x);
-
-
-//homework page 1 task 5 - display all products
-console.log(" This is the CUSTOMER. javascript");
-// conn.setSQL("select * from products");
-// conn.executeSQL(conn);
 
 
 function showList(callback) {
-  // var _conn = new oConnection();
-  // _conn.setSQL(custSQL[0]);
-  // _conn.executeSQL(_conn);
-  connection.query(custSQL[0], function (err, result) {
+  var sql = "select p.item_id , p.product_name , d.department_name, p.price , p.stock_quantity\
+   from products p , departments d where p.department_id  = d.department_id \
+   order by p.department_id ,p.price , p.product_name " ;
+
+  connection.query(sql, function (err, result) {
     if (err) {
       console.log("sql Create Error: ", err);
       connection.end();
@@ -66,82 +46,76 @@ function showList(callback) {
 }
 
 
+var _resultSet;
 
 function startPrompt() {
-  var inStockQuantity;
+  promptID(); //promt for item ID   
+};
 
-  inStockQuantity = promptID();
+
+function promptID() {
+
+  inquirer.prompt(
+    [{
+      name: "prod_id",
+      message: "What is the Product ID or QUIT?"
+    }]
+  ).then(function (answers) {
+    console.log(" in prompt ID - what is answers", answers);
+    if (answers.prod_id.toUpperCase() == "QUIT") process.exit();
+    if (isNaN(answers.prod_id)) {
+      console.log(" Please enter numeric ID value");
+      startPrompt();
+      return;
+    } else {
+      var sql = "Select item_id, stock_quantity from products where item_id = ? ";
+      connection.query(sql, answers.prod_id, function (err, result) {
+        if (err) throw err;
+        if (result.length == 0) {
+          console.log(" Id number not valid, try again ");
+          startPrompt();
+          return;
+        }
+        inStockQuantity = result[0].stock_quantity;
+        console.log("valid id and quantity, on hand: ", inStockQuantity);
+        _resultSet = result;
+        promptQuantity(result);
+      });
+    }
+  });
+}
+
+var promptQuantity = function (result) {
   inquirer
     .prompt([
-      {
-        message: "What is the Product ID or QUIT?",
-        name: "prod_id"
-      },
       {
         message: "How many do you wish to buy?",
         name: "quant"
       }
     ])
     .then(answers => {
-      if (answers.prod_id == "QUIT") process.exit();
-      if (isNaN(answers.prod_id)) {
-        console.log(" Please enter numeric ID value");
-        startPrompt();
-      } else {
-        connection.query(custSQL[1], answers.prod_id, function (err, result) {
-          if (err) throw err;
-          if (result.length == 0) {
-            console.log(" Id number not valid, try again ");
-            startPrompt();
-          }
-          inStockQuantity = result[0].stock_quantity;
-          console.log("valid id and quantity");
-          update_products(answers);
-          showList(startPrompt);
-        });
+      console.log(" in pQ ,", result[0], answers);
+      if (isNaN(answers.quant)){
+        console.log("Please enter numeric quantity value");
+        promptQuantity(result);
+        return;
       }
-
-    });
-};
-
-
-
-function promptID(){
-  inquirer
-  .prompt([
-    {
-      message: "What is the Product ID or QUIT?",
-      name: "prod_id"
-    }   
-  ])
-  .then(answers => {
-    if (answers.prod_id == "QUIT") process.exit();
-    if (isNaN(answers.prod_id)) {
-      console.log(" Please enter numeric ID value");
-      //startPrompt();
-      return false;
-    } else {
-      connection.query(custSQL[1], answers.prod_id, function (err, result) {
-        if (err) throw err;
-        if (result.length == 0) {
-          console.log(" Id number not valid, try again ");
-          //startPrompt();
-          return false;
-        }
-        inStockQuantity = result[0].stock_quantity;
-        console.log("valid id and quantity, on hand: " , inStockQuantity);
-        return inStockQuantity
-        update_products(answers);
+      if (result[0].stock_quantity >= answers.quant) {
+        update_products(result[0].item_id, answers.quant);
         showList(startPrompt);
-      });
-    }
-
-  });
+        return;
+      } else {
+        console.log(`Sorry Insufficient Quantity, we have ${result[0].stock_quantity} on hand`);
+        promptQuantity(result);
+      }
+    })
 }
+// promptQuantity();
 
-function update_products(answers) {
+
+function update_products(aID, aQnt) {
   var x = " Update products set stock_quantity = stock_quantity - ? where item_id = ?";
-  connection.query(x, [answers.quant, answers.prod_id], function (err, result) {
+  connection.query(x, [aQnt, aID], function (err, result) {
     if (err) {
       console.log("sql Create Error: ", err);
       connection.end();
@@ -158,6 +132,6 @@ function showProductList() {
 }
 
 
-console.log("Show list of Products");
+console.log("\n\n\n\n\nShow list of Products");
 showProductList();
 
