@@ -23,58 +23,33 @@ function oConnection() {
 
     this.mySQL = "";
 
+    this.params = '';
+
+    this.resultSet;
+
     this.setSQL = function (sql) {
         this.mySQL = sql;
     }
 
-    this.resultSet;
-
-    this.executeSQL = function (aConn) {
-        // console.log(conn.connection._connectCalled) ; <== perfect true false
-        prepareConnection(aConn, performSQL);
+    this.setParams = function (params) {
+        this.params = params;
     }
-}
 
+    this.getParams = function () {
+        return this.params;
+    }
 
-
-// this is outside of oConnection
-function prepareConnection(conn, callback) {
-    //console.log("connected: ", conn.connection._connectCalled, ', sql:', conn.mySQL);
-    if (!conn.connection._connectCalled) {
-        conn.connection.connect(function (err) {
-            if (err) {
-                console.log("Connect Error: ", err);
-                conn.connection.end();
-                throw err;
-            } else {
-                console.log("Connected!");
-                callback(conn);
+    this.executeSQL = function (aconn, sql, params, oconnCallback) {
+        aconn.connection.query(sql, params, function (err, result) {
+            if (err) throw err;
+            if (result.length == 0) {
+                console.log("  empty dataset ");
+                return;
             }
-        })
+            oconnCallback(result);
+        });
     }
-}
 
-function performSQL(conn) {
-    conn.connection.query(conn.mySQL, function (err, result) {
-        if (err) {
-            console.log("sql Create Error: ", err);
-            conn.connection.end();
-            throw err;
-        }
-
-        conn.connection.end();
-        console.log("Result set num of rec", result.length);
-        //displayResult(result);
-        console.table(result);
-    });
-}
-
-//this uses the npm console table package
-// function displayResult(resultSet) {
-//     console.table(resultSet);
-// }
-
-
-
+} // end of constructor oConn
 
 module.exports = oConnection;
