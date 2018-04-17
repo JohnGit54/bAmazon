@@ -3,27 +3,8 @@ var inquirer = require("inquirer");
 const cTable = require('console.table');
 var currencyFormatter = require('currency-formatter');
 
-
-var connection = mysql.createConnection({
-    host: "localhost",
-    port: 3306,
-    // Your username
-    user: "root",
-    //Your password    
-    password: "root",
-    database: "bamazon"
-});
-
-
-connection.connect(function (err) {
-    if (err) {
-        console.log("Connect Error: ", err);
-        connection.end();
-        throw err;
-    } else {
-        console.log("Connected! as id ", connection.threadId);
-    }
-})
+var oConnection = require('./oConnection');
+var oConn = new oConnection();
 
 
 function SupervisorMenu() {
@@ -41,7 +22,7 @@ function SupervisorMenu() {
         } else if (inqRes.selection === "Create New Dept") {
             addDepartment();
         } else if (inqRes.selection === "Exit") {
-            connection.end();
+            oConn.connection.end();
             process.exit();
         }
     })
@@ -54,20 +35,12 @@ function viewSalesbyDept() {
 concat('$', format(product_sales , 2)) as 'Product Sales' , \
 concat('$', format( product_sales - overhead_costs , 2)) as 'Total Profit' from departments ";
 
-
-
-    connection.query(sql, function (err, result) {
-        if (err) {
-            console.log("sql Create Error: ", err);
-            connection.end();
-            throw err;
-        }
+    oConn.executeSQL(oConn, sql, " ", function (dataset) {
         console.log(`\n\n**** Sales by Department :  *****`);
-
-        console.table(result);
+        console.table(dataset);
         SupervisorMenu();
-    });
-
+    })
+   
 }
 
 
@@ -85,10 +58,10 @@ function addDepartment() {
             {
                 message: "Yearly Overhead Costs?",
                 name: "ovrhd"
-            } 
+            }
         ])
-        .then(function (res) {             
-            connection.query(
+        .then(function (res) {
+            oConn.connection.query(
                 "INSERT INTO departments SET ?",
                 {
                     department_name: res.deptname,
@@ -96,7 +69,7 @@ function addDepartment() {
                 },
                 function (err, res) {
                     if (err) {
-                        connection.end();
+                        oConn.connection.end();
                     } else {
                         console.log(res.affectedRows + " Department inserted!\n");
                         // Call updateCrud AFTER the INSERT completes
