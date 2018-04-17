@@ -3,27 +3,8 @@ var inquirer = require("inquirer");
 const cTable = require('console.table');
 var currencyFormatter = require('currency-formatter');
 
-
-var connection = mysql.createConnection({
-    host: "localhost",
-    port: 3306,
-    // Your username
-    user: "root",
-    //Your password    
-    password: "root",
-    database: "bamazon"
-});
-
-
-connection.connect(function (err) {
-    if (err) {
-        console.log("Connect Error: ", err);
-        connection.end();
-        throw err;
-    } else {
-        console.log("Connected! as id ", connection.threadId);
-    }
-})
+var oConnection = require('./oConnection');
+var oConn = new oConnection();
 
 
 function managerMenu() {
@@ -46,7 +27,7 @@ function managerMenu() {
         } else if (inqRes.selection === "Add Product") {
             addProducts();
         } else if (inqRes.selection === "Exit") {
-            connection.end();
+            oConn.connection.end();
             process.exit();
         }
     })
@@ -59,17 +40,11 @@ function viewProds() {
     from products p , departments d where p.department_id  = d.department_id \
     order by p.department_id ,p.price , p.product_name " ;
 
-    connection.query(sql, function (err, result) {
-        if (err) {
-            console.log("sql Create Error: ", err);
-            connection.end();
-            throw err;
-        }
-        console.log(`'\n\n***** ProductInventory:  *** num of items:  ${result.length}  ***`);
-        console.table(result);
+    oConn.executeSQL(oConn, sql, " ", function (dataset) {
+        console.log(`\n\n***** ProductInventory:  *** num of items:  ${dataset.length}  ***`);
+        console.table(dataset);
         managerMenu();
-    });
-
+    })
 }
 
 function lowInventory() {
@@ -77,17 +52,13 @@ function lowInventory() {
  from products p , departments d where ( p.department_id  = d.department_id ) \
  and ( p.stock_quantity <= 5)  order by p.department_id ,p.price , p.product_name " ;
 
-    connection.query(sql, function (err, result) {
-        if (err) {
-            console.log("sql Create Error: ", err);
-            connection.end();
-            throw err;
-        }
-        console.log(`\n\n*** ${result.length} items with Low Inventory:  ******`);
-        console.table(result);
-    });
-    managerMenu();
+    oConn.executeSQL(oConn, sql, " ", function (dataset) {
+        console.log(`'\n\n*****Items with Low Inventory:  *** num of items:  ${dataset.length}  ***`);
+        console.table(dataset);
+        managerMenu();
+    })
 }
+
 
 function addInventory() {
 
@@ -97,14 +68,8 @@ function addInventory() {
     order by p.department_id ,p.price , p.product_name " ;
 
     var array = []; //will have array for inquier list
-
-    connection.query(sql, function (err, result) {
-        if (err) {
-            console.log("sql Create Error: ", err);
-            connection.end();
-            throw err;
-        }
-        result.forEach(element => {
+    oConn.executeSQL(oConn, sql, " ", function (dataset) {
+        dataset.forEach(element => {
             var x = element.item_id + " : " + element.product_name + " : " + element.department_name + " : " + element.price + " : " + element.stock_quantity;
             array.push(x);
         });
@@ -135,13 +100,8 @@ function inquirerLowInventory(array) {
 }
 
 function updateProducts(id, quantity) {
-    var x = " Update products set stock_quantity = stock_quantity + ? where item_id = ?";
-    connection.query(x, [quantity, id], function (err, result) {
-        if (err) {
-            console.log(" Update sql Create Error: ", err);
-            connection.end();
-            throw err;
-        }
+    var sql = " Update products set stock_quantity = stock_quantity + ? where item_id = ?";
+    oConn.executeSQL(oConn, sql, [quantity, id], function (dataset) {
         console.log("Quantity updated");
         viewProds()
     })
@@ -152,18 +112,14 @@ function addProducts() {
     //need to get department name-id from dept table
     var arrayD = [];
     var sql = "select department_id , department_name from departments";
-    connection.query(sql, function (err, result) {
-        if (err) {
-            console.log("sql Create Error: ", err);
-            connection.end();
-            throw err;
-        }
-        result.forEach(element => {
+    //console.log('start of addProducts');
+    oConn.executeSQL(oConn, sql, '', function (dataset) {
+        //console.log(' addProducts dataset ', dataset);
+        dataset.forEach(element => {
             var x = element.department_id + " : " + element.department_name;
-            console.log(x);
+            //console.log(x);
             arrayD.push(x);
         });
-
 
         console.log('start inquiere');
         inquirer
@@ -189,7 +145,7 @@ function addProducts() {
             ])
             .then(function (res) {
                 var di = res.deptid.split(':');
-                connection.query(
+                oConn.connection.query(
                     "INSERT INTO products SET ?",
                     {
                         department_id: parseInt(di[0]),
@@ -199,7 +155,7 @@ function addProducts() {
                     },
                     function (err, res) {
                         if (err) {
-                            connection.end();
+                            oConn.connection.end();
                         } else {
                             console.log(res.affectedRows + " product inserted!\n");
                             // Call updateCrud AFTER the INSERT completes
@@ -209,6 +165,7 @@ function addProducts() {
                 );
             });//ends then
     })
+
 }
 
 
