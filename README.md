@@ -25,4 +25,10 @@ Create CLI - command line interface storefront with customer, manager and superv
  * Add new departments 
 
 
+Gifs of each users roles: 
 
+https://github.com/JohnGit54/bAmazon/blob/master/ScreenShots/bAmazonCustomer.gif
+
+https://github.com/JohnGit54/bAmazon/blob/master/ScreenShots/bAmazonManger.gif
+
+https://github.com/JohnGit54/bAmazon/blob/master/ScreenShots/bAmazonSuperVisor.gif
